@@ -1,0 +1,107 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package ex09;
+import java.sql.*; 
+import java.util.*; 
+
+/**
+ *
+ * @author 4181
+ */
+public class Ex09 {
+    Ex09()  {
+                     
+    }/**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        int i;
+         try{
+            System.out.println("hi");
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        Connection con = DriverManager.getConnection("jdbc:oracle:thin:@10.6.4.33:1521:orcl","4181","vaishali");
+        Statement st = con.createStatement();
+        /*PreparedStatement stmt=con.prepareStatement("insert into customers values(?,?,?)");  
+        stmt.setInt(1,30);  
+        stmt.setString(2,"Ratan");  
+        stmt.setString(3,"Tata");    
+        i=stmt.executeUpdate();  
+        System.out.println(i+" records inserted");  */
+        
+        PreparedStatement stmt=con.prepareStatement("select * from customers where cid=(?)");  
+        stmt.setInt(1,30);
+        ResultSet rs=stmt.executeQuery();  
+        while(rs.next()){  
+        System.out.println(rs.getInt(1)+" "+rs.getString(2)+" "+rs.getString(3));  
+        }
+
+        con.close();  
+        }catch(Exception ex) 
+        { 
+            System.err.println(ex); 
+        } 
+    }
+    
+}
+
+
+////////////////////////////////////////
+
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package ex09;
+import java.sql.*;
+import javax.swing.*;
+import java.util.*; 
+/**
+ *
+ * @author vaish
+ */
+public class Ex09 {
+    int i;
+    Ex09()  {
+         try{
+            System.out.println("hi");
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orcl","system","vaishali");
+        /*Statement st = con.createStatement();
+        PreparedStatement stmt=con.prepareStatement("insert into customers values(?,?,?)");  
+        stmt.setInt(1,30);  
+        stmt.setString(2,"Ratan");  
+        stmt.setString(3,"Tata");    
+        i=stmt.executeUpdate();  
+        System.out.println(i+" records inserted");  */
+        
+        PreparedStatement stmt=con.prepareStatement("select * from customers where cid=(?)");  
+        stmt.setInt(1,30);
+        ResultSet rs=stmt.executeQuery();  
+        while(rs.next()){  
+        System.out.println(rs.getInt(1)+" "+rs.getString(2)+" "+rs.getString(3)); 
+        }
+
+        con.close();  
+        }catch(Exception ex) 
+        { 
+            System.err.println(ex); 
+        } 
+                     
+    }
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        Ex09 obj= new Ex09();
+        // TODO code application logic here
+        
+       
+    }
+    
+}
+

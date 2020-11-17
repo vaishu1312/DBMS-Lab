@@ -1,0 +1,208 @@
+
+
+SQL> set serveroutput on
+
+SQL>  declare
+  2   ename emp1.first_name%type;
+  3   esal emp1.salary%type;
+  4   num emp1.employee_id%type;
+  5   inc number(6);
+  6   begin
+  7     num:=&eno;
+  8     inc:=&increment;
+  9     update emp1 set salary=salary+inc where employee_id=num;
+ 10   if sql%found then
+ 11      select employee_id,first_name,salary into num,ename,esal from emp1 where employee_id=num;
+ 12      dbms_output.put_line('Number:'||num||' Name'||ename||' Salary is.'||esal);
+ 13   else
+ 14      dbms_output.put_line('Record NOT FOUND !!!');
+ 15   end if;
+ 16   end;
+ 17  /
+Enter value for eno: 102
+old   7:    num:=&eno;
+new   7:    num:=102;
+Enter value for increment: 500
+old   8:    inc:=&increment;
+new   8:    inc:=500;
+Number:102 NameLex Salary is.17500                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+
+PL/SQL procedure successfully completed.
+
+
+SQL> ed
+Wrote file afiedt.buf
+
+  1   declare
+  2   eno emp1.employee_id%type;
+  3   ename emp1.first_name%type;
+  4   esal emp1.salary%type;
+  5   jid emp1.job_id%type;
+  6   inc number(6);
+  7   begin
+  8     jid:='&jobid';
+  9     inc:=&increment;
+ 10     update emp1 set salary=salary+inc where job_id=jid;
+ 11   if sql%found then
+ 12      dbms_output.put_line('Number of Rows Affected:'||SQL%ROWCOUNT);
+ 13   else
+ 14      dbms_output.put_line('Record NOT FOUND !!!');
+ 15   end if;
+ 16*  end;
+ 17  
+ 18  /
+Enter value for jobid: SA_REP
+old   8:    jid:='&jobid';
+new   8:    jid:='SA_REP';
+Enter value for increment: 300
+old   9:    inc:=&increment;
+new   9:    inc:=300;
+Number of Rows Affected:3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+
+PL/SQL procedure successfully completed.
+
+
+
+SQL> ed
+Wrote file afiedt.buf
+
+  1   declare
+  2   emp emp1%rowtype;
+  3   cursor c1 is select employee_id,first_name,salary from emp1 order by salary desc;
+  4   counter number(2);
+  5   begin
+  6  open c1;
+  7  for count in 1..5 loop
+  8  	fetch c1 into emp.employee_id,emp.first_name, emp.salary;
+  9  	dbms_output.put_line(' Emp Number'||emp.employee_id||' Name '||emp.first_name||' Salary is '||emp.salary);
+ 10  end loop;
+ 11*  end;
+SQL> /
+Emp Number100 Name Steven Salary is 24000                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+Emp Number101 Name Neena Salary is 18000                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+Emp Number102 Name Lex Salary is 17500                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+Emp Number201 Name Michael Salary is 13000                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+Emp Number205 Name Shelley Salary is 12000                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+
+PL/SQL procedure successfully completed.
+
+
+SQL> ed
+Wrote file afiedt.buf
+
+  1   declare
+  2   emp emp1%rowtype;
+  3   cursor c1 is select employee_id,first_name,salary from emp1 order by salary desc;
+  4   counter number(2);
+  5   begin
+  6  for cur in c1 loop
+  7  dbms_output.put_line(' Emp Number'||cur.employee_id||' Name '||cur.first_name||' Salary is '||cur.salary);
+  8  end loop;
+  9*  end;
+SQL> /
+Emp Number100 Name Steven Salary is 24000                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+Emp Number101 Name Neena Salary is 18000                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+Emp Number102 Name Lex Salary is 17500                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+Emp Number201 Name Michael Salary is 13000                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+Emp Number205 Name Shelley Salary is 12000                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+Emp Number174 Name Ellen Salary is 11300                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+Emp Number149 Name Eleni Salary is 10500                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+Emp Number103 Name Alexander Salary is 9000                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+Emp Number176 Name Jonathon Salary is 8900                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+Emp Number206 Name William Salary is 8300                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+Emp Number178 Name Kimberely Salary is 7300                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+Emp Number104 Name Bruce Salary is 6000                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+Emp Number202 Name Pat Salary is 6000                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+Emp Number124 Name Kevin Salary is 5800                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+Emp Number106 Name Valli Salary is 4800                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+Emp Number105 Name David Salary is 4800                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+Emp Number200 Name Jennifer Salary is 4400                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+Emp Number107 Name Diana Salary is 4200                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+Emp Number141 Name Trenna Salary is 3500                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+Emp Number142 Name Curtis Salary is 3100                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+Emp Number143 Name Randall Salary is 2600                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+Emp Number144 Name Peter Salary is 2500                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+
+PL/SQL procedure successfully completed.
+
+SQL> desc emp1;
+ Name                                                                                                                                                                                                                                                                                                  Null?    Type
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ EMPLOYEE_ID                                                                                                                                                                                                                                                                                                    NUMBER(6)
+ FIRST_NAME                                                                                                                                                                                                                                                                                                     VARCHAR2(20)
+ LAST_NAME                                                                                                                                                                                                                                                                                             NOT NULL VARCHAR2(25)
+ EMAIL                                                                                                                                                                                                                                                                                                 NOT NULL VARCHAR2(25)
+ PHONE_NUMBER                                                                                                                                                                                                                                                                                                   VARCHAR2(20)
+ HIRE_DATE                                                                                                                                                                                                                                                                                             NOT NULL DATE
+ JOB_ID                                                                                                                                                                                                                                                                                                NOT NULL VARCHAR2(10)
+ SALARY                                                                                                                                                                                                                                                                                                         NUMBER(8,2)
+ COMMISSION_PCT                                                                                                                                                                                                                                                                                                 NUMBER(2,2)
+ MANAGER_ID                                                                                                                                                                                                                                                                                                     NUMBER(6)
+ DEPARTMENT_ID                                                                                                                                                                                                                                                                                                  NUMBER(4)
+
+SQL> ed
+Wrote file afiedt.buf
+
+  1  create or replace procedure emp_det(eno IN emp1.employee_id%type, name OUT emp1.first_name%type, sal OUT emp1.salary%type) is
+  2  begin
+  3  select first_name,salary into name,sal from emp1 where employee_id=eno;
+  4* end;
+SQL> /
+
+Procedure created.
+
+
+SQL> ed
+Wrote file afiedt.buf
+
+  1  declare
+  2  eno emp1.employee_id%type;
+  3  name emp1.first_name%type;
+  4  sal emp1.salary%type;
+  5  begin
+  6  eno:=&eno;
+  7  emp_det(eno,name,sal);
+  8  dbms_output.put_line('Eno: '||eno||' Name is: '||name||' Salary. '||sal);
+  9* end;
+SQL> /
+Enter value for eno: 100
+old   6: eno:=&eno;
+new   6: eno:=100;
+Eno: 100 Name is: Steven Salary. 24000                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+
+PL/SQL procedure successfully completed.
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+SQL> ed
+Wrote file afiedt.buf
+
+  1  create or replace function emp_sal(eno emp1.employee_id%type) return real is
+  2  sal emp1.salary%type;
+  3  begin
+  4  select salary into sal from emp1 where employee_id=eno;
+  5  dbms_output.put_line('salary '||sal);
+  6  return sal;
+  7* end;
+SQL> /
+
+Function created.
+
+SQL> select emp_sal(100) from dual;
+
+EMP_SAL(100)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+------------                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+       24000                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
+salary 24000                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+SQL> execute emp_sal(101);
+BEGIN emp_sal(101); END;
+
+      *
+ERROR at line 1:
+ORA-06550: line 1, column 7: 
+PLS-00221: 'EMP_SAL' is not a procedure or is undefined 
+ORA-06550: line 1, column 7: 
+PL/SQL: Statement ignored 
+
+
+SQL> spool off;

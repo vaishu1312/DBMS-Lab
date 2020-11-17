@@ -1,0 +1,499 @@
+SQL> @z:lab1.sql
+SQL> DROP TABLE ORDER_DETAILS;
+
+Table dropped.
+
+SQL> DROP TABLE ORDERS;
+
+Table dropped.
+
+SQL> DROP TABLE PART;
+
+Table dropped.
+
+SQL> DROP TABLE EMPLOYEE;
+
+Table dropped.
+
+SQL> DROP TABLE CUSTOMER;
+
+Table dropped.
+
+SQL> DROP TABLE AREA_DETAILS;
+
+Table dropped.
+
+SQL> 
+SQL> REM Consider a mail order database in which employees take orders for parts from customers.
+SQL> 
+SQL> CREATE TABLE AREA_DETAILS(
+  2  PINCODE NUMBER(6) CONSTRAINT pn_pk PRIMARY KEY,
+  3  AREA VARCHAR2(10));
+
+Table created.
+
+SQL> 
+SQL> DESC AREA_DETAILS;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ PINCODE                                   NOT NULL NUMBER(6)
+ AREA                                               VARCHAR2(10)
+
+SQL> 
+SQL> CREATE TABLE EMPLOYEE(
+  2  E_NO VARCHAR2(6) CONSTRAINT e_no_pk PRIMARY KEY,
+  3  E_NAME VARCHAR2(10) CONSTRAINT e_name NOT NULL,
+  4  DOB DATE,
+  5  PINCODE NUMBER(6),
+  6  CONSTRAINT pn_fk FOREIGN KEY (PINCODE) REFERENCES AREA_DETAILS(PINCODE),
+  7  CONSTRAINT E_BEGIN CHECK ( E_NO LIKE 'E%'));
+
+Table created.
+
+SQL> 
+SQL> DESC EMPLOYEE;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ E_NO                                      NOT NULL VARCHAR2(6)
+ E_NAME                                    NOT NULL VARCHAR2(10)
+ DOB                                                DATE
+ PINCODE                                            NUMBER(6)
+
+SQL> 
+SQL> CREATE TABLE CUSTOMER(
+  2  C_NO VARCHAR2(6),
+  3  C_NAME VARCHAR2(10) CONSTRAINT c_name NOT NULL,
+  4  STREET_NAME VARCHAR2(10),
+  5  PINCODE NUMBER(6),
+  6  CONSTRAINT cpn_fk FOREIGN KEY (PINCODE) REFERENCES AREA_DETAILS(PINCODE),
+  7  DOB DATE,
+  8  PHONE_NO NUMBER(10),
+  9  CONSTRAINT c_no_pk PRIMARY KEY(C_NO),
+ 10  CONSTRAINT phone_no_uni UNIQUE(PHONE_NO),
+ 11  CONSTRAINT C_BEGIN CHECK ( C_NO LIKE 'C%' ));
+
+Table created.
+
+SQL> 
+SQL> DESC CUSTOMER;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ C_NO                                      NOT NULL VARCHAR2(6)
+ C_NAME                                    NOT NULL VARCHAR2(10)
+ STREET_NAME                                        VARCHAR2(10)
+ PINCODE                                            NUMBER(6)
+ DOB                                                DATE
+ PHONE_NO                                           NUMBER(10)
+
+SQL> 
+SQL> CREATE TABLE PART(
+  2  P_NO VARCHAR2(6) CONSTRAINT p_no_pk PRIMARY KEY,
+  3  P_NAME VARCHAR2(10),
+  4  PRICE NUMBER(5) CONSTRAINT price_no NOT NULL,
+  5  QTY_AVL NUMBER(5),
+  6  CONSTRAINT P_BEGIN CHECK ( P_NO LIKE 'P%' ));
+
+Table created.
+
+SQL> 
+SQL> DESC PART;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ P_NO                                      NOT NULL VARCHAR2(6)
+ P_NAME                                             VARCHAR2(10)
+ PRICE                                     NOT NULL NUMBER(5)
+ QTY_AVL                                            NUMBER(5)
+
+SQL> 
+SQL> CREATE TABLE ORDERS(
+  2  O_NO VARCHAR2(6) CONSTRAINT o_no PRIMARY KEY,
+  3  C_NO VARCHAR2(6),
+  4  CONSTRAINT c_no_fk FOREIGN KEY (C_NO) REFERENCES CUSTOMER(C_NO),
+  5  E_NO VARCHAR2(6),
+  6  CONSTRAINT e_no_fk FOREIGN KEY (E_NO) REFERENCES EMPLOYEE(E_NO),
+  7  RCD_DT DATE,
+  8  SHIP_DT DATE,
+  9  CONSTRAINT dt CHECK (RCD_DT<SHIP_DT),
+ 10  CONSTRAINT O_BEGIN CHECK ( O_NO LIKE 'O%' ));
+
+Table created.
+
+SQL> 
+SQL> DESC ORDERS;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ O_NO                                      NOT NULL VARCHAR2(6)
+ C_NO                                               VARCHAR2(6)
+ E_NO                                               VARCHAR2(6)
+ RCD_DT                                             DATE
+ SHIP_DT                                            DATE
+
+SQL> 
+SQL> CREATE TABLE ORDER_DETAILS(
+  2  O_NO VARCHAR2(6) CONSTRAINT or_no	REFERENCES ORDERS(O_NO),
+  3  P_NO VARCHAR2(6),
+  4  CONSTRAINT p_no_fk FOREIGN KEY (P_NO) REFERENCES PART(P_NO),
+  5  QTY_ORD NUMBER(5),
+  6  CONSTRAINT qty_ord_nz CHECK ( QTY_ORD>0 ),
+  7  CONSTRAINT o_p_pk PRIMARY KEY (O_NO,P_NO));
+
+Table created.
+
+SQL> 
+SQL> DESC ORDER_DETAILS;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ O_NO                                      NOT NULL VARCHAR2(6)
+ P_NO                                      NOT NULL VARCHAR2(6)
+ QTY_ORD                                            NUMBER(5)
+
+SQL> 
+SQL> INSERT INTO AREA_DETAILS VALUES(600010,'KILPAUK');
+
+1 row created.
+
+SQL> INSERT INTO AREA_DETAILS VALUES(600082,'PERAMBUR');
+
+1 row created.
+
+SQL> INSERT INTO AREA_DETAILS VALUES(600011,'KALAVAKKAM');
+
+1 row created.
+
+SQL> INSERT INTO AREA_DETAILS VALUES(600013,'CHETPET');
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO EMPLOYEE VALUES('E5390','AISHU','13-NOV-2000',600010);
+
+1 row created.
+
+SQL> INSERT INTO EMPLOYEE VALUES('E4181','VAISHALI','13-DEC-1999',600082);
+
+1 row created.
+
+SQL> INSERT INTO EMPLOYEE VALUES('E3912','ABI','13-OCT-1999',600010);
+
+1 row created.
+
+SQL> 
+SQL> REM  violates constraints
+SQL> 
+SQL> INSERT INTO EMPLOYEE VALUES('3780','santhi','13-NOV-1978',600011);
+INSERT INTO EMPLOYEE VALUES('3780','santhi','13-NOV-1978',600011)
+*
+ERROR at line 1:
+ORA-02290: check constraint (4181.E_BEGIN) violated 
+
+
+SQL> 
+SQL> INSERT INTO CUSTOMER VALUES('C7541','JAISRI','3RD STREET', 600013, '26-JAN-1996', 9451263478);
+
+1 row created.
+
+SQL> INSERT INTO CUSTOMER VALUES('C8191','MADHU','1ST STREET',600011,'04-JUL-1993',9348764514);
+
+1 row created.
+
+SQL> INSERT INTO CUSTOMER VALUES('C9173','ASHWIN','5TH STREET',600010,'19-APR-1990',9545756281);
+
+1 row created.
+
+SQL> 
+SQL> REM  violates constraints
+SQL> 
+SQL> INSERT INTO CUSTOMER VALUES ('C2343','RAJ','6TH STREET',600082,'19-AUG-1989', 9348764514);
+INSERT INTO CUSTOMER VALUES ('C2343','RAJ','6TH STREET',600082,'19-AUG-1989', 9348764514)
+*
+ERROR at line 1:
+ORA-00001: unique constraint (4181.PHONE_NO_UNI) violated 
+
+
+SQL> 
+SQL> INSERT INTO PART VALUES('P23456','NUT',23,20);
+
+1 row created.
+
+SQL> INSERT INTO PART VALUES('P87910','HAMMER',50,200);
+
+1 row created.
+
+SQL> INSERT INTO PART VALUES('P63729','BOLT', 65,410);
+
+1 row created.
+
+SQL> INSERT INTO PART VALUES('P01023','SPANNER',45,150);
+
+1 row created.
+
+SQL> 
+SQL> REM  violates constraints
+SQL> 
+SQL> INSERT INTO PART VALUES('P40952','SAW',NULL,200);
+INSERT INTO PART VALUES('P40952','SAW',NULL,200)
+                                       *
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("4181"."PART"."PRICE") 
+
+
+SQL> 
+SQL> INSERT INTO ORDERS VALUES('O70850','C9173','E4181','05-DEC-2018','07-DEC-2018');
+
+1 row created.
+
+SQL> INSERT INTO ORDERS VALUES('O80791','C7541','E3912','20-JAN-2019','21-JAN-2019');
+
+1 row created.
+
+SQL> INSERT INTO ORDERS VALUES('O53865','C8191','E5390','10-JAN-2019','15-JAN-2019');
+
+1 row created.
+
+SQL> 
+SQL> REM  violates constraints
+SQL> 
+SQL> INSERT INTO ORDERS VALUES('O24355', 'C8191','E4181' ,'18-FEB-2018','15-FEB-2018');
+INSERT INTO ORDERS VALUES('O24355', 'C8191','E4181' ,'18-FEB-2018','15-FEB-2018')
+*
+ERROR at line 1:
+ORA-02290: check constraint (4181.DT) violated 
+
+
+SQL> 
+SQL> INSERT INTO ORDER_DETAILS VALUES('O70850','P01023',45);
+
+1 row created.
+
+SQL> INSERT INTO ORDER_DETAILS VALUES('O80791','P01023',15);
+
+1 row created.
+
+SQL> INSERT INTO ORDER_DETAILS VALUES('O80791','P87910',80);
+
+1 row created.
+
+SQL> INSERT INTO ORDER_DETAILS VALUES('O53865','P63729',100);
+
+1 row created.
+
+SQL> 
+SQL> REM  violates constraints
+SQL> 
+SQL> INSERT INTO ORDER_DETAILS VALUES('O53865','P23456',-2);
+INSERT INTO ORDER_DETAILS VALUES('O53865','P23456',-2)
+*
+ERROR at line 1:
+ORA-02290: check constraint (4181.QTY_ORD_NZ) violated 
+
+
+SQL> 
+SQL> SELECT * FROM AREA_DETAILS;
+
+   PINCODE AREA                                                                 
+---------- ----------                                                           
+    600010 KILPAUK                                                              
+    600082 PERAMBUR                                                             
+    600011 KALAVAKKAM                                                           
+    600013 CHETPET                                                              
+
+SQL> SELECT * FROM PART;
+
+P_NO   P_NAME          PRICE    QTY_AVL                                         
+------ ---------- ---------- ----------                                         
+P23456 NUT                23         20                                         
+P87910 HAMMER             50        200                                         
+P63729 BOLT               65        410                                         
+P01023 SPANNER            45        150                                         
+
+SQL> SELECT * FROM EMPLOYEE;
+
+E_NO   E_NAME     DOB          PINCODE                                          
+------ ---------- --------- ----------                                          
+E5390  AISHU      13-NOV-00     600010                                          
+E4181  VAISHALI   13-DEC-99     600082                                          
+E3912  ABI        13-OCT-99     600010                                          
+
+SQL> SELECT * FROM CUSTOMER;
+
+C_NO   C_NAME     STREET_NAM    PINCODE DOB         PHONE_NO                    
+------ ---------- ---------- ---------- --------- ----------                    
+C7541  JAISRI     3RD STREET     600013 26-JAN-96 9451263478                    
+C8191  MADHU      1ST STREET     600011 04-JUL-93 9348764514                    
+C9173  ASHWIN     5TH STREET     600010 19-APR-90 9545756281                    
+
+SQL> SELECT * FROM ORDERS;
+
+O_NO   C_NO   E_NO   RCD_DT    SHIP_DT                                          
+------ ------ ------ --------- ---------                                        
+O70850 C9173  E4181  05-DEC-18 07-DEC-18                                        
+O80791 C7541  E3912  20-JAN-19 21-JAN-19                                        
+O53865 C8191  E5390  10-JAN-19 15-JAN-19                                        
+
+SQL> SELECT * FROM ORDER_DETAILS;
+
+O_NO   P_NO      QTY_ORD                                                        
+------ ------ ----------                                                        
+O70850 P01023         45                                                        
+O80791 P01023         15                                                        
+O80791 P87910         80                                                        
+O53865 P63729        100                                                        
+
+SQL> 
+SQL> REM  It is identified that the following attributes are to be included in respective relations:Parts (reorder level), Employees (hiredate)
+SQL> 
+SQL> ALTER TABLE EMPLOYEE
+  2  ADD (HIRE_DATE DATE);
+
+Table altered.
+
+SQL> 
+SQL> DESC EMPLOYEE;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ E_NO                                      NOT NULL VARCHAR2(6)
+ E_NAME                                    NOT NULL VARCHAR2(10)
+ DOB                                                DATE
+ PINCODE                                            NUMBER(6)
+ HIRE_DATE                                          DATE
+
+SQL> 
+SQL> ALTER TABLE PART
+  2  ADD (REORDER_LEVEL NUMBER(5));
+
+Table altered.
+
+SQL> 
+SQL> DESC PART;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ P_NO                                      NOT NULL VARCHAR2(6)
+ P_NAME                                             VARCHAR2(10)
+ PRICE                                     NOT NULL NUMBER(5)
+ QTY_AVL                                            NUMBER(5)
+ REORDER_LEVEL                                      NUMBER(5)
+
+SQL> 
+SQL> REM The width of a customer name is not adequate for most of the customers.
+SQL> 
+SQL> ALTER TABLE CUSTOMER
+  2  MODIFY C_NAME VARCHAR2(20);
+
+Table altered.
+
+SQL> 
+SQL> REM  The dateofbirth of a customer can be addressed later / removed from the schema.
+SQL> 
+SQL> ALTER TABLE CUSTOMER
+  2  DROP COLUMN DOB;
+
+Table altered.
+
+SQL> 
+SQL> DESC CUSTOMER;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ C_NO                                      NOT NULL VARCHAR2(6)
+ C_NAME                                    NOT NULL VARCHAR2(20)
+ STREET_NAME                                        VARCHAR2(10)
+ PINCODE                                            NUMBER(6)
+ PHONE_NO                                           NUMBER(10)
+
+SQL> 
+SQL> REM An order can not be placed without the receive date
+SQL> 
+SQL> ALTER TABLE ORDERS
+  2  ADD CONSTRAINT rcd_dt_nn CHECK(RCD_DT IS NOT NULL);
+
+Table altered.
+
+SQL> 
+SQL> DESC ORDERS;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ O_NO                                      NOT NULL VARCHAR2(6)
+ C_NO                                               VARCHAR2(6)
+ E_NO                                               VARCHAR2(6)
+ RCD_DT                                             DATE
+ SHIP_DT                                            DATE
+
+SQL> 
+SQL> REM  A customer may cancel an order or ordered part(s) may not be available in a stock.
+SQL> REM Hence on removing the details of the order, ensure that all the corresponding details are also deleted.
+SQL> 
+SQL> ALTER TABLE ORDER_DETAILS
+  2  DROP CONSTRAINT or_no;
+
+Table altered.
+
+SQL> ALTER TABLE ORDER_DETAILS
+  2  ADD CONSTRAINT or_no
+  3  FOREIGN KEY(O_NO)
+  4  REFERENCES ORDERS (O_NO)
+  5  ON DELETE CASCADE;
+
+Table altered.
+
+SQL> DESC ORDER_DETAILS;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ O_NO                                      NOT NULL VARCHAR2(6)
+ P_NO                                      NOT NULL VARCHAR2(6)
+ QTY_ORD                                            NUMBER(5)
+
+SQL> 
+SQL> DELETE FROM ORDERS WHERE O_NO='O70850';
+
+1 row deleted.
+
+SQL> 
+SQL> SELECT * FROM AREA_DETAILS;
+
+   PINCODE AREA                                                                 
+---------- ----------                                                           
+    600010 KILPAUK                                                              
+    600082 PERAMBUR                                                             
+    600011 KALAVAKKAM                                                           
+    600013 CHETPET                                                              
+
+SQL> SELECT * FROM PART;
+
+P_NO   P_NAME          PRICE    QTY_AVL REORDER_LEVEL                           
+------ ---------- ---------- ---------- -------------                           
+P23456 NUT                23         20                                         
+P87910 HAMMER             50        200                                         
+P63729 BOLT               65        410                                         
+P01023 SPANNER            45        150                                         
+
+SQL> SELECT * FROM EMPLOYEE;
+
+E_NO   E_NAME     DOB          PINCODE HIRE_DATE                                
+------ ---------- --------- ---------- ---------                                
+E5390  AISHU      13-NOV-00     600010                                          
+E4181  VAISHALI   13-DEC-99     600082                                          
+E3912  ABI        13-OCT-99     600010                                          
+
+SQL> SELECT * FROM CUSTOMER;
+
+C_NO   C_NAME               STREET_NAM    PINCODE   PHONE_NO                    
+------ -------------------- ---------- ---------- ----------                    
+C7541  JAISRI               3RD STREET     600013 9451263478                    
+C8191  MADHU                1ST STREET     600011 9348764514                    
+C9173  ASHWIN               5TH STREET     600010 9545756281                    
+
+SQL> SELECT * FROM ORDERS;
+
+O_NO   C_NO   E_NO   RCD_DT    SHIP_DT                                          
+------ ------ ------ --------- ---------                                        
+O80791 C7541  E3912  20-JAN-19 21-JAN-19                                        
+O53865 C8191  E5390  10-JAN-19 15-JAN-19                                        
+
+SQL> SELECT * FROM ORDER_DETAILS;
+
+O_NO   P_NO      QTY_ORD                                                        
+------ ------ ----------                                                        
+O80791 P01023         15                                                        
+O80791 P87910         80                                                        
+O53865 P63729        100                                                        
+
+SQL> spool off

@@ -1,0 +1,315 @@
+SQL> @z:lab2.sql
+SQL> REM Display the nobel laureate(s) who born after 1Jul1960.
+SQL> SELECT *
+  2  FROM nobel
+  3  WHERE dob>'01-jul-1960';
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        111 Eric A Cornell                 m Phy Atomic physics                  2001 University of Colorado         19-DEC-61 USA                    
+        124 Carol W Greider                f Med Enzymes                         2009 Johns Hopkins University       15-APR-61 USA                    
+        125 Barack H Obama                 m Pea World organizing                2009 President of USA               04-AUG-61 USA                    
+
+SQL> 
+SQL> REM Display the Indian laureate (name, category, field, country, year awarded) who was awarded in the Chemistry category.
+SQL> SELECT name,category,field,country,year_award
+  2  FROM nobel
+  3  WHERE category='Che' and country='India';
+
+NAME                           CAT FIELD                     COUNTRY    YEAR_AWARD                                                                    
+------------------------------ --- ------------------------- ---------- ----------                                                                    
+Venkatraman Ramakrishnan       Che Biochemistry              India            2009                                                                    
+
+SQL> 
+SQL> REM Display the laureates (name, category,field and year of award) who was awarded between 2000 and 2005 for the Physics or Chemistry category.
+SQL> 
+SQL> SELECT name,category,field,year_award
+  2  FROM nobel
+  3  WHERE year_award between 2000 and 2005 and (category='Phy' or category='Che');
+
+NAME                           CAT FIELD                     YEAR_AWARD                                                                               
+------------------------------ --- ------------------------- ----------                                                                               
+Eric A Cornell                 Phy Atomic physics                  2001                                                                               
+Carl E Wieman                  Phy Atomic physics                  2001                                                                               
+Ryoji Noyori                   Che Organic Chemistry               2001                                                                               
+K Barry Sharpless              Che Organic Chemistry               2001                                                                               
+
+SQL> 
+SQL> REM Display the laureates name with their age at the time of award for the Peace category.
+SQL> 
+SQL> SELECT name, year_award-EXTRACT (YEAR FROM (dob)) as age
+  2  FROM nobel
+  3  WHERE category='Pea';
+
+NAME                                  AGE                                                                                                             
+------------------------------ ----------                                                                                                             
+John Hume                              61                                                                                                             
+David Trimble                          54                                                                                                             
+Kofi Annan                             63                                                                                                             
+Barack H Obama                         48                                                                                                             
+
+SQL> 
+SQL> REM Display the laureates (name,category,aff_role,country) whose name starts with A or ends with a, but not from Isreal.
+SQL> 
+SQL> SELECT name,category,aff_role,country
+  2  FROM nobel
+  3  WHERE country not in('Isreal') and (name LIKE 'A%' or name LIKE '%a') ;
+
+NAME                           CAT AFF_ROLE                       COUNTRY                                                                             
+------------------------------ --- ------------------------------ ----------                                                                          
+Amartya Sen                    Eco Trinity College                India                                                                               
+Barack H Obama                 Pea President of USA               USA                                                                                 
+
+SQL> 
+SQL> REM Display the name, gender, affiliation, dob and country of laureates who was born in 1950's. Label the dob column as Born 1950.
+SQL> 
+SQL> SELECT name,gender,aff_role,dob as Born_1950 ,country
+  2  FROM nobel
+  3  WHERE EXTRACT (YEAR FROM (dob)) between 1950 and 1960;
+
+NAME                           G AFF_ROLE                       BORN_1950 COUNTRY                                                                     
+------------------------------ - ------------------------------ --------- ----------                                                                  
+Robert B. Laughlin             m Stanford University            01-NOV-50 USA                                                                         
+Carl E Wieman                  m University of Colorado         26-MAR-51 USA                                                                         
+Venkatraman Ramakrishnan       m MRC Laboratory                 19-AUG-52 India                                                                       
+Herta Muller                   f                                17-AUG-53 Romania                                                                     
+
+SQL> 
+SQL> REM Display the laureates (name,gender,category,aff_role,country) whose name starts with A, D or H.
+SQL> REM Remove the laureate if he/she do not have any affiliation. Sort the results in ascending order of name.
+SQL> 
+SQL> SELECT name,gender,category,aff_role,country
+  2  FROM nobel
+  3  WHERE (name LIKE 'A%' or name LIKE 'D%' or name LIKE 'H%' ) and aff_role not in('null')
+  4  ORDER BY name ASC;
+
+NAME                           G CAT AFF_ROLE                       COUNTRY                                                                           
+------------------------------ - --- ------------------------------ ----------                                                                        
+Ada E Yonath                   f Che Weizmann Institute of Science  Isreal                                                                            
+Amartya Sen                    m Eco Trinity College                India                                                                             
+Daniel C. Tsui                 m Phy Princeton University           China                                                                             
+David Trimble                  m Pea Ulster Unionist party Leader   Ireland                                                                           
+Horst L Stormer                m Phy Columbia University            Germany                                                                           
+
+SQL> 
+SQL> REM Display the university name(s) that has to its credit by having at least 2 nobel laureate with them.
+SQL> 
+SQL> SELECT aff_role, COUNT(name) as count
+  2  FROM nobel
+  3  WHERE aff_role LIKE 'University%'	or aff_role LIKE '%University'
+  4  GROUP BY aff_role
+  5  HAVING COUNT(name)>=2;
+
+AFF_ROLE                            COUNT                                                                                                             
+------------------------------ ----------                                                                                                             
+University of California                5                                                                                                             
+University of Colorado                  2                                                                                                             
+
+SQL> 
+SQL> REM List the date of birth of youngest and eldest laureates by countrywise.
+SQL> REM Label the column as Younger, Elder respectively. Include only the country having more than one laureate.
+SQL> REM Sort the output in alphabetical order of country.
+SQL> 
+SQL> SELECT country, COUNT(name) count, min(dob) Younger,max(dob) Elder
+  2  FROM nobel
+  3  GROUP BY country
+  4  HAVING COUNT(name)>1
+  5  ORDER BY country ASC;
+
+COUNTRY         COUNT YOUNGER   ELDER                                                                                                                 
+---------- ---------- --------- ---------                                                                                                             
+China               2 04-NOV-33 28-FEB-39                                                                                                             
+India               2 03-NOV-33 19-AUG-52                                                                                                             
+Ireland             2 18-JAN-37 15-OCT-44                                                                                                             
+UK                  2 31-OCT-25 17-AUG-32                                                                                                             
+USA                11 10-MAY-30 19-DEC-61                                                                                                             
+
+SQL> 
+SQL> REM Show the details (year award,category,field) where the award is shared among the laureates in the same category and field. Exclude the laureates from USA.
+SQL> 
+SQL> SELECT year_award,category,field
+  2  FROM nobel
+  3  WHERE country not in('USA')
+  4  GROUP BY year_award,category,field
+  5  having count(category)>1
+  6  order by year_award;
+
+YEAR_AWARD CAT FIELD                                                                                                                                  
+---------- --- -------------------------                                                                                                              
+      1998 Che Theoretical Chemistry                                                                                                                  
+      1998 Pea Negotiation                                                                                                                            
+      1998 Phy Condensed matter                                                                                                                       
+      2009 Che Biochemistry                                                                                                                           
+
+SQL> 
+SQL> REM 11.Mark an intermediate point in the transaction (savepoint).
+SQL> SAVEPOINT spt;
+
+Savepoint created.
+
+SQL> 
+SQL> SELECT *
+  2  FROM nobel;
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        100 Robert B. Laughlin             m Phy Condensed matter                1998 Stanford University            01-NOV-50 USA                    
+        101 Horst L Stormer                m Phy Condensed matter                1998 Columbia University            06-APR-49 Germany                
+        102 Daniel C. Tsui                 m Phy Condensed matter                1998 Princeton University           28-FEB-39 China                  
+        103 Walter Kohn                    m Che Theoretical Chemistry           1998 University of California       09-MAR-23 Austria                
+        104 John Pople                     m Che Theoretical Chemistry           1998 North Western University       31-OCT-25 UK                     
+        106 John Hume                      m Pea Negotiation                     1998 Labour party Leader            18-JAN-37 Ireland                
+        107 David Trimble                  m Pea Negotiation                     1998 Ulster Unionist party Leader   15-OCT-44 Ireland                
+        108 Louis J Ignaroo                m Med Cardiovascular system           1998 University of California       31-MAY-41 USA                    
+        109 Amartya Sen                    m Eco Welfare Economics               1998 Trinity College                03-NOV-33 India                  
+        110 Jose Saramago                  m Lit Portuguese                      1998                                16-NOV-22 Portugal               
+        111 Eric A Cornell                 m Phy Atomic physics                  2001 University of Colorado         19-DEC-61 USA                    
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        112 Carl E Wieman                  m Phy Atomic physics                  2001 University of Colorado         26-MAR-51 USA                    
+        113 Ryoji Noyori                   m Che Organic Chemistry               2001 Nagoya University              03-SEP-38 Japan                  
+        114 K Barry Sharpless              m Che Organic Chemistry               2001 Scripps Research Institute     28-APR-41 USA                    
+        115 Kofi Annan                     m Pea World organizing                2001 UN General                     08-APR-38 Ghana                  
+        116 Joerge A Akeriof               m Eco Economic of Information         2001 University of California       17-JUN-40 USA                    
+        117 V S Naipaul                    m Lit English                         2001                                17-AUG-32 UK                     
+        118 Charles A Kao                  m Phy Fiber technology                2009 University of Hongkong         04-NOV-33 China                  
+        119 Willard S Boyle                m Phy Semiconductor technology        2009 Bell Laboratories              19-AUG-24 Canada                 
+        120 George E Smith                 m Phy Semiconductor technology        2009 Bell Laboratories              10-MAY-30 USA                    
+        121 Venkatraman Ramakrishnan       m Che Biochemistry                    2009 MRC Laboratory                 19-AUG-52 India                  
+        122 Ada E Yonath                   f Che Biochemistry                    2009 Weizmann Institute of Science  22-JUN-39 Isreal                 
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        123 Elizabeth H Blackburn          f Med Enzymes                         2009 University of California       26-NOV-48 Australia              
+        124 Carol W Greider                f Med Enzymes                         2009 Johns Hopkins University       15-APR-61 USA                    
+        125 Barack H Obama                 m Pea World organizing                2009 President of USA               04-AUG-61 USA                    
+        126 Oliver E Williamson            m Eco Economic governance             2009 University of California       27-SEP-32 USA                    
+        127 Elinor Ostrom                  m Eco Economic governance             2009 Indiana University             07-AUG-33 USA                    
+        128 Herta Muller                   f Lit German                          2009                                17-AUG-53 Romania                
+
+28 rows selected.
+
+SQL> 
+SQL> REM 12.Insert a new tuple into the nobel relation.
+SQL> 
+SQL> INSERT INTO nobel VALUES (129,'Abdul Kalam','m','Phy','Satellite Launch',2004,null,'01-oct-1935','India');
+
+1 row created.
+
+SQL> 
+SQL> REM 13.Update the aff_role of literature laureates as 'Linguists'.
+SQL> 
+SQL> UPDATE nobel
+  2  SET aff_role='Linguists'
+  3  WHERE category='Lit';
+
+3 rows updated.
+
+SQL> 
+SQL> REM 14.Delete the laureate(s) who was awarded in Enzymes field.
+SQL> 
+SQL> DELETE FROM nobel
+  2  WHERE field='Enzymes';
+
+2 rows deleted.
+
+SQL> 
+SQL> SELECT *
+  2  FROM nobel;
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        100 Robert B. Laughlin             m Phy Condensed matter                1998 Stanford University            01-NOV-50 USA                    
+        101 Horst L Stormer                m Phy Condensed matter                1998 Columbia University            06-APR-49 Germany                
+        102 Daniel C. Tsui                 m Phy Condensed matter                1998 Princeton University           28-FEB-39 China                  
+        103 Walter Kohn                    m Che Theoretical Chemistry           1998 University of California       09-MAR-23 Austria                
+        104 John Pople                     m Che Theoretical Chemistry           1998 North Western University       31-OCT-25 UK                     
+        106 John Hume                      m Pea Negotiation                     1998 Labour party Leader            18-JAN-37 Ireland                
+        107 David Trimble                  m Pea Negotiation                     1998 Ulster Unionist party Leader   15-OCT-44 Ireland                
+        108 Louis J Ignaroo                m Med Cardiovascular system           1998 University of California       31-MAY-41 USA                    
+        109 Amartya Sen                    m Eco Welfare Economics               1998 Trinity College                03-NOV-33 India                  
+        110 Jose Saramago                  m Lit Portuguese                      1998 Linguists                      16-NOV-22 Portugal               
+        111 Eric A Cornell                 m Phy Atomic physics                  2001 University of Colorado         19-DEC-61 USA                    
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        112 Carl E Wieman                  m Phy Atomic physics                  2001 University of Colorado         26-MAR-51 USA                    
+        113 Ryoji Noyori                   m Che Organic Chemistry               2001 Nagoya University              03-SEP-38 Japan                  
+        114 K Barry Sharpless              m Che Organic Chemistry               2001 Scripps Research Institute     28-APR-41 USA                    
+        115 Kofi Annan                     m Pea World organizing                2001 UN General                     08-APR-38 Ghana                  
+        116 Joerge A Akeriof               m Eco Economic of Information         2001 University of California       17-JUN-40 USA                    
+        117 V S Naipaul                    m Lit English                         2001 Linguists                      17-AUG-32 UK                     
+        118 Charles A Kao                  m Phy Fiber technology                2009 University of Hongkong         04-NOV-33 China                  
+        119 Willard S Boyle                m Phy Semiconductor technology        2009 Bell Laboratories              19-AUG-24 Canada                 
+        120 George E Smith                 m Phy Semiconductor technology        2009 Bell Laboratories              10-MAY-30 USA                    
+        121 Venkatraman Ramakrishnan       m Che Biochemistry                    2009 MRC Laboratory                 19-AUG-52 India                  
+        122 Ada E Yonath                   f Che Biochemistry                    2009 Weizmann Institute of Science  22-JUN-39 Isreal                 
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        125 Barack H Obama                 m Pea World organizing                2009 President of USA               04-AUG-61 USA                    
+        126 Oliver E Williamson            m Eco Economic governance             2009 University of California       27-SEP-32 USA                    
+        127 Elinor Ostrom                  m Eco Economic governance             2009 Indiana University             07-AUG-33 USA                    
+        128 Herta Muller                   f Lit German                          2009 Linguists                      17-AUG-53 Romania                
+        129 Abdul Kalam                    m Phy Satellite Launch                2004                                01-OCT-35 India                  
+
+27 rows selected.
+
+SQL> 
+SQL> REM 15.Discard the most recent update operations (rollback).
+SQL> ROLLBACK TO spt;
+
+Rollback complete.
+
+SQL> 
+SQL> SELECT *
+  2  FROM nobel;
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        100 Robert B. Laughlin             m Phy Condensed matter                1998 Stanford University            01-NOV-50 USA                    
+        101 Horst L Stormer                m Phy Condensed matter                1998 Columbia University            06-APR-49 Germany                
+        102 Daniel C. Tsui                 m Phy Condensed matter                1998 Princeton University           28-FEB-39 China                  
+        103 Walter Kohn                    m Che Theoretical Chemistry           1998 University of California       09-MAR-23 Austria                
+        104 John Pople                     m Che Theoretical Chemistry           1998 North Western University       31-OCT-25 UK                     
+        106 John Hume                      m Pea Negotiation                     1998 Labour party Leader            18-JAN-37 Ireland                
+        107 David Trimble                  m Pea Negotiation                     1998 Ulster Unionist party Leader   15-OCT-44 Ireland                
+        108 Louis J Ignaroo                m Med Cardiovascular system           1998 University of California       31-MAY-41 USA                    
+        109 Amartya Sen                    m Eco Welfare Economics               1998 Trinity College                03-NOV-33 India                  
+        110 Jose Saramago                  m Lit Portuguese                      1998                                16-NOV-22 Portugal               
+        111 Eric A Cornell                 m Phy Atomic physics                  2001 University of Colorado         19-DEC-61 USA                    
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        112 Carl E Wieman                  m Phy Atomic physics                  2001 University of Colorado         26-MAR-51 USA                    
+        113 Ryoji Noyori                   m Che Organic Chemistry               2001 Nagoya University              03-SEP-38 Japan                  
+        114 K Barry Sharpless              m Che Organic Chemistry               2001 Scripps Research Institute     28-APR-41 USA                    
+        115 Kofi Annan                     m Pea World organizing                2001 UN General                     08-APR-38 Ghana                  
+        116 Joerge A Akeriof               m Eco Economic of Information         2001 University of California       17-JUN-40 USA                    
+        117 V S Naipaul                    m Lit English                         2001                                17-AUG-32 UK                     
+        118 Charles A Kao                  m Phy Fiber technology                2009 University of Hongkong         04-NOV-33 China                  
+        119 Willard S Boyle                m Phy Semiconductor technology        2009 Bell Laboratories              19-AUG-24 Canada                 
+        120 George E Smith                 m Phy Semiconductor technology        2009 Bell Laboratories              10-MAY-30 USA                    
+        121 Venkatraman Ramakrishnan       m Che Biochemistry                    2009 MRC Laboratory                 19-AUG-52 India                  
+        122 Ada E Yonath                   f Che Biochemistry                    2009 Weizmann Institute of Science  22-JUN-39 Isreal                 
+
+LAUREATE_ID NAME                           G CAT FIELD                     YEAR_AWARD AFF_ROLE                       DOB       COUNTRY                
+----------- ------------------------------ - --- ------------------------- ---------- ------------------------------ --------- ----------             
+        123 Elizabeth H Blackburn          f Med Enzymes                         2009 University of California       26-NOV-48 Australia              
+        124 Carol W Greider                f Med Enzymes                         2009 Johns Hopkins University       15-APR-61 USA                    
+        125 Barack H Obama                 m Pea World organizing                2009 President of USA               04-AUG-61 USA                    
+        126 Oliver E Williamson            m Eco Economic governance             2009 University of California       27-SEP-32 USA                    
+        127 Elinor Ostrom                  m Eco Economic governance             2009 Indiana University             07-AUG-33 USA                    
+        128 Herta Muller                   f Lit German                          2009                                17-AUG-53 Romania                
+
+28 rows selected.
+
+SQL> 
+SQL> REM Commit the changes.
+SQL> 
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> spool off;

@@ -1,0 +1,694 @@
+SQL> @C:\Users\vaish\Desktop\dbms_lab\ex4\lab4.sql
+SQL> REM 1. Create a view named Blue_Flavor, which display the product details (product id,
+SQL> REM food, price) of Blueberry flavor.
+SQL> 
+SQL> CREATE VIEW Blue_Flavor AS
+  2  SELECT PID,FOOD,PRICE
+  3  FROM PRODUCTS
+  4  WHERE FLAVOR='Blueberry';
+
+View created.
+
+SQL> 
+SQL> SELECT * FROM Blue_flavor;
+
+PID             FOOD                      PRICE                                 
+--------------- -------------------- ----------                                 
+90-BLU-11       Tart                       3.25                                 
+51-BLU          Danish                     1.15                                 
+
+SQL> 
+SQL> SELECT COLUMN_NAME, UPDATABLE from
+  2  USER_UPDATABLE_COLUMNS where TABLE_NAME='BLUE_FLAVOR';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+PID                            YES                                              
+FOOD                           YES                                              
+PRICE                          YES                                              
+
+SQL> 
+SQL> SELECT * FROM PRODUCTS WHERE FLAVOR='Blueberry';
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+90-BLU-11       Blueberry  Tart                       3.25                      
+51-BLU          Blueberry  Danish                     1.15                      
+
+SQL> 
+SQL> INSERT INTO Blue_flavor values ('30-BLFV','PIZZA',34);
+
+1 row created.
+
+SQL> UPDATE Blue_flavor SET PRICE=25
+  2  WHERE PID='90-BLU-11';
+
+1 row updated.
+
+SQL> DELETE FROM Blue_flavor
+  2  WHERE FOOD='Danish';
+DELETE FROM Blue_flavor
+*
+ERROR at line 1:
+ORA-02292: integrity constraint (SYSTEM.ITEM_FK) violated - child record found 
+
+
+SQL> 
+SQL> SELECT * FROM PRODUCTS WHERE FLAVOR='Blueberry';
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+90-BLU-11       Blueberry  Tart                         25                      
+51-BLU          Blueberry  Danish                     1.15                      
+
+SQL> 
+SQL> SELECT * FROM Blue_flavor;
+
+PID             FOOD                      PRICE                                 
+--------------- -------------------- ----------                                 
+90-BLU-11       Tart                         25                                 
+51-BLU          Danish                     1.15                                 
+
+SQL> 
+SQL> INSERT INTO PRODUCTS values('35-BLFV','Blueberry','Cookie',19);
+
+1 row created.
+
+SQL> UPDATE PRODUCTS SET PRICE=25
+  2  WHERE FLAVOR='Blueberry';
+
+3 rows updated.
+
+SQL> DELETE FROM PRODUCTS WHERE FOOD='Tart';
+DELETE FROM PRODUCTS WHERE FOOD='Tart'
+*
+ERROR at line 1:
+ORA-02292: integrity constraint (SYSTEM.ITEM_FK) violated - child record found 
+
+
+SQL> 
+SQL> SELECT * FROM Blue_flavor;
+
+PID             FOOD                      PRICE                                 
+--------------- -------------------- ----------                                 
+90-BLU-11       Tart                         25                                 
+51-BLU          Danish                       25                                 
+35-BLFV         Cookie                       25                                 
+
+SQL> 
+SQL> REM 2. Create a view named Cheap_Food, which display the details (product id, flavor,
+SQL> REM food, price) of products with price lesser than $1. Ensure that, the price of these
+SQL> REM food(s) should never rise above $1 through view.
+SQL> 
+SQL> CREATE VIEW Cheap_Food AS
+  2  SELECT *
+  3  FROM PRODUCTS
+  4  WHERE PRICE<1;
+
+View created.
+
+SQL> 
+SQL> SELECT * FROM Cheap_Food;
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+70-LEM          Lemon      Cookie                      .79                      
+70-W            Walnut     Cookie                      .79                      
+
+SQL> 
+SQL> SELECT COLUMN_NAME, UPDATABLE from
+  2  USER_UPDATABLE_COLUMNS where TABLE_NAME='CHEAP_FOOD';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+PID                            YES                                              
+FLAVOR                         YES                                              
+FOOD                           YES                                              
+PRICE                          YES                                              
+
+SQL> 
+SQL> SELECT * FROM PRODUCTS WHERE PRICE<1;
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+70-LEM          Lemon      Cookie                      .79                      
+70-W            Walnut     Cookie                      .79                      
+
+SQL> 
+SQL> INSERT INTO Cheap_Food values ('60-CPF','Veg','Nugget',0.32);
+
+1 row created.
+
+SQL> UPDATE Cheap_Food SET FOOD='IceCream'
+  2  WHERE PID='70-W';
+
+1 row updated.
+
+SQL> DELETE FROM Cheap_Food
+  2  WHERE FLAVOR='Lemon';
+DELETE FROM Cheap_Food
+*
+ERROR at line 1:
+ORA-02292: integrity constraint (SYSTEM.ITEM_FK) violated - child record found 
+
+
+SQL> 
+SQL> SELECT * FROM PRODUCTS WHERE PRICE<1;
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+70-LEM          Lemon      Cookie                      .79                      
+70-W            Walnut     IceCream                    .79                      
+60-CPF          Veg        Nugget                      .32                      
+
+SQL> 
+SQL> SELECT * FROM Cheap_Food;
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+70-LEM          Lemon      Cookie                      .79                      
+70-W            Walnut     IceCream                    .79                      
+60-CPF          Veg        Nugget                      .32                      
+
+SQL> 
+SQL> INSERT INTO PRODUCTS values('18-CPF','Nuts','Twist',0.19);
+
+1 row created.
+
+SQL> UPDATE PRODUCTS SET PRICE=0.25
+  2  WHERE FLAVOR='Lemon' and FOOD='Cookie';
+
+1 row updated.
+
+SQL> DELETE FROM PRODUCTS WHERE FOOD='Nugget';
+
+1 row deleted.
+
+SQL> 
+SQL> SELECT * FROM Cheap_Food;
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+70-LEM          Lemon      Cookie                      .25                      
+70-W            Walnut     IceCream                    .79                      
+18-CPF          Nuts       Twist                       .19                      
+
+SQL> 
+SQL> REM 3.Create a view called Hot_Food that show the product id and its quantity where the
+SQL> REM same product is ordered more than once in the same receipt.
+SQL> 
+SQL> CREATE VIEW Hot_Food AS
+  2  SELECT ITEM,COUNT(*) AS QUANTITY
+  3  FROM ITEM_LIST
+  4  GROUP BY RNO,ITEM
+  5  HAVING COUNT(*)>1;
+
+View created.
+
+SQL> 
+SQL> SELECT * FROM Hot_Food;
+
+ITEM              QUANTITY                                                      
+--------------- ----------                                                      
+70-R                     2                                                      
+90-APR-PF                2                                                      
+50-APP                   2                                                      
+51-ATW                   2                                                      
+90-ALM-I                 2                                                      
+90-BER-11                2                                                      
+90-PEC-11                2                                                      
+70-M-CH-DZ               2                                                      
+46-11                    2                                                      
+70-M-CH-DZ               2                                                      
+90-CHR-11                2                                                      
+
+ITEM              QUANTITY                                                      
+--------------- ----------                                                      
+90-BLU-11                2                                                      
+50-CHS                   2                                                      
+70-M-CH-DZ               2                                                      
+70-R                     2                                                      
+90-APP-11                2                                                      
+70-MAR                   2                                                      
+50-APR                   2                                                      
+51-BC                    2                                                      
+50-ALM                   2                                                      
+
+20 rows selected.
+
+SQL> 
+SQL> SELECT COLUMN_NAME, UPDATABLE from
+  2  USER_UPDATABLE_COLUMNS where TABLE_NAME='HOT_FOOD';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+ITEM                           NO                                               
+QUANTITY                       NO                                               
+
+SQL> 
+SQL> SELECT ITEM,COUNT(*) AS QUANTITY
+  2  FROM ITEM_LIST
+  3  GROUP BY RNO,ITEM
+  4  HAVING COUNT(*)>1;
+
+ITEM              QUANTITY                                                      
+--------------- ----------                                                      
+70-R                     2                                                      
+90-APR-PF                2                                                      
+50-APP                   2                                                      
+51-ATW                   2                                                      
+90-ALM-I                 2                                                      
+90-BER-11                2                                                      
+90-PEC-11                2                                                      
+70-M-CH-DZ               2                                                      
+46-11                    2                                                      
+70-M-CH-DZ               2                                                      
+90-CHR-11                2                                                      
+
+ITEM              QUANTITY                                                      
+--------------- ----------                                                      
+90-BLU-11                2                                                      
+50-CHS                   2                                                      
+70-M-CH-DZ               2                                                      
+70-R                     2                                                      
+90-APP-11                2                                                      
+70-MAR                   2                                                      
+50-APR                   2                                                      
+51-BC                    2                                                      
+50-ALM                   2                                                      
+
+20 rows selected.
+
+SQL> 
+SQL> INSERT INTO Hot_Food values(
+  2  '13-HF',3);
+INSERT INTO Hot_Food values(
+*
+ERROR at line 1:
+ORA-01733: virtual column not allowed here 
+
+
+SQL> UPDATE Hot_Food SET QUANTITY=10
+  2  WHERE ITEM='46-11';
+UPDATE Hot_Food SET QUANTITY=10
+       *
+ERROR at line 1:
+ORA-01732: data manipulation operation not legal on this view 
+
+
+SQL> DELETE FROM Hot_Food
+  2  WHERE ITEM='70-R';
+DELETE FROM Hot_Food
+            *
+ERROR at line 1:
+ORA-01732: data manipulation operation not legal on this view 
+
+
+SQL> 
+SQL> SELECT ITEM,COUNT(*) AS QUANTITY
+  2  FROM ITEM_LIST
+  3  GROUP BY RNO,ITEM
+  4  HAVING COUNT(*)>1;
+
+ITEM              QUANTITY                                                      
+--------------- ----------                                                      
+70-R                     2                                                      
+90-APR-PF                2                                                      
+50-APP                   2                                                      
+51-ATW                   2                                                      
+90-ALM-I                 2                                                      
+90-BER-11                2                                                      
+90-PEC-11                2                                                      
+70-M-CH-DZ               2                                                      
+46-11                    2                                                      
+70-M-CH-DZ               2                                                      
+90-CHR-11                2                                                      
+
+ITEM              QUANTITY                                                      
+--------------- ----------                                                      
+90-BLU-11                2                                                      
+50-CHS                   2                                                      
+70-M-CH-DZ               2                                                      
+70-R                     2                                                      
+90-APP-11                2                                                      
+70-MAR                   2                                                      
+50-APR                   2                                                      
+51-BC                    2                                                      
+50-ALM                   2                                                      
+
+20 rows selected.
+
+SQL> 
+SQL> REM 4.Create a view named Pie_Food that will display the details (customer lname, flavor,
+SQL> REM receipt number and date, ordinal) who had ordered the Pie food with receipt details.
+SQL> 
+SQL> CREATE VIEW Pie_Food AS
+  2  SELECT CID,LNAME,FLAVOR,RNO,RDATE,ORDINAL
+  3  FROM CUSTOMERS NATURAL JOIN RECEIPTS NATURAL JOIN ITEM_LIST JOIN PRODUCTS on ITEM=PID
+  4  WHERE FOOD='Pie';
+
+View created.
+
+SQL> 
+SQL> SELECT * FROM Pie_Food;
+
+       CID LNAME           FLAVOR            RNO RDATE        ORDINAL           
+---------- --------------- ---------- ---------- --------- ----------           
+         1 JULIET          Apple           39685 28-OCT-07          4           
+         1 JULIET          Apple           66227 10-OCT-07          2           
+         3 TRAVIS          Apple           48647 09-OCT-07          2           
+         6 JOSETTE         Apple           87454 21-OCT-07          1           
+         6 JOSETTE         Apple           47353 12-OCT-07          2           
+         8 RUPERT          Apple           53376 30-OCT-07          3           
+         9 CUC             Apple           50660 18-OCT-07          2           
+        13 KIP             Apple           11548 21-OCT-07          2           
+        14 RAYFORD         Apple           29226 26-OCT-07          2           
+        14 RAYFORD         Apple           51991 17-OCT-07          1           
+        16 ARIANE          Apple           39109 02-OCT-07          1           
+
+       CID LNAME           FLAVOR            RNO RDATE        ORDINAL           
+---------- --------------- ---------- ---------- --------- ----------           
+        16 ARIANE          Apple           44798 04-OCT-07          3           
+        17 CHARLENE        Apple           98806 15-OCT-07          3           
+
+13 rows selected.
+
+SQL> 
+SQL> SELECT COLUMN_NAME, UPDATABLE from
+  2  USER_UPDATABLE_COLUMNS where TABLE_NAME='PIE_FOOD';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+CID                            NO                                               
+LNAME                          NO                                               
+FLAVOR                         NO                                               
+RNO                            YES                                              
+RDATE                          NO                                               
+ORDINAL                        YES                                              
+
+6 rows selected.
+
+SQL> 
+SQL> SELECT CID,LNAME,FLAVOR,RNO,RDATE,ORDINAL
+  2  FROM CUSTOMERS NATURAL JOIN RECEIPTS NATURAL JOIN ITEM_LIST JOIN PRODUCTS on ITEM=PID
+  3  WHERE FOOD='Pie';
+
+       CID LNAME           FLAVOR            RNO RDATE        ORDINAL           
+---------- --------------- ---------- ---------- --------- ----------           
+         1 JULIET          Apple           39685 28-OCT-07          4           
+         1 JULIET          Apple           66227 10-OCT-07          2           
+         3 TRAVIS          Apple           48647 09-OCT-07          2           
+         6 JOSETTE         Apple           87454 21-OCT-07          1           
+         6 JOSETTE         Apple           47353 12-OCT-07          2           
+         8 RUPERT          Apple           53376 30-OCT-07          3           
+         9 CUC             Apple           50660 18-OCT-07          2           
+        13 KIP             Apple           11548 21-OCT-07          2           
+        14 RAYFORD         Apple           29226 26-OCT-07          2           
+        14 RAYFORD         Apple           51991 17-OCT-07          1           
+        16 ARIANE          Apple           39109 02-OCT-07          1           
+
+       CID LNAME           FLAVOR            RNO RDATE        ORDINAL           
+---------- --------------- ---------- ---------- --------- ----------           
+        16 ARIANE          Apple           44798 04-OCT-07          3           
+        17 CHARLENE        Apple           98806 15-OCT-07          3           
+
+13 rows selected.
+
+SQL> 
+SQL> INSERT INTO Pie_Food values (30,'RAJEN','STRAWBERRY',87210,'13-DEC-99',1);
+INSERT INTO Pie_Food values (30,'RAJEN','STRAWBERRY',87210,'13-DEC-99',1)
+*
+ERROR at line 1:
+ORA-01779: cannot modify a column which maps to a non key-preserved table 
+
+
+SQL> UPDATE Pie_Food SET LNAME='MARIE'
+  2  WHERE ORDINAL=4;
+UPDATE Pie_Food SET LNAME='MARIE'
+                    *
+ERROR at line 1:
+ORA-01779: cannot modify a column which maps to a non key-preserved table 
+
+
+SQL> DELETE FROM Pie_Food WHERE
+  2  RNO=98806;
+
+1 row deleted.
+
+SQL> 
+SQL> SELECT CID,LNAME,FLAVOR,RNO,RDATE,ORDINAL
+  2  FROM CUSTOMERS NATURAL JOIN RECEIPTS NATURAL JOIN ITEM_LIST JOIN PRODUCTS on ITEM=PID
+  3  WHERE FOOD='Pie';
+
+       CID LNAME           FLAVOR            RNO RDATE        ORDINAL           
+---------- --------------- ---------- ---------- --------- ----------           
+         1 JULIET          Apple           39685 28-OCT-07          4           
+         1 JULIET          Apple           66227 10-OCT-07          2           
+         3 TRAVIS          Apple           48647 09-OCT-07          2           
+         6 JOSETTE         Apple           87454 21-OCT-07          1           
+         6 JOSETTE         Apple           47353 12-OCT-07          2           
+         8 RUPERT          Apple           53376 30-OCT-07          3           
+         9 CUC             Apple           50660 18-OCT-07          2           
+        13 KIP             Apple           11548 21-OCT-07          2           
+        14 RAYFORD         Apple           29226 26-OCT-07          2           
+        14 RAYFORD         Apple           51991 17-OCT-07          1           
+        16 ARIANE          Apple           39109 02-OCT-07          1           
+
+       CID LNAME           FLAVOR            RNO RDATE        ORDINAL           
+---------- --------------- ---------- ---------- --------- ----------           
+        16 ARIANE          Apple           44798 04-OCT-07          3           
+
+12 rows selected.
+
+SQL> 
+SQL> REM 5. Create a view Cheap_View from Cheap_Food that shows only the product id, flavor and food.
+SQL> 
+SQL> CREATE VIEW Cheap_View AS
+  2  SELECT PID,FLAVOR,FOOD
+  3  FROM Cheap_Food;
+
+View created.
+
+SQL> 
+SQL> SELECT * FROM Cheap_View;
+
+PID             FLAVOR     FOOD                                                 
+--------------- ---------- --------------------                                 
+70-LEM          Lemon      Cookie                                               
+70-W            Walnut     IceCream                                             
+18-CPF          Nuts       Twist                                                
+
+SQL> 
+SQL> SELECT COLUMN_NAME, UPDATABLE from
+  2  USER_UPDATABLE_COLUMNS where TABLE_NAME='CHEAP_VIEW';
+
+COLUMN_NAME                    UPD                                              
+------------------------------ ---                                              
+PID                            YES                                              
+FLAVOR                         YES                                              
+FOOD                           YES                                              
+
+SQL> 
+SQL> SELECT *
+  2  FROM Cheap_Food;
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+70-LEM          Lemon      Cookie                      .25                      
+70-W            Walnut     IceCream                    .79                      
+18-CPF          Nuts       Twist                       .19                      
+
+SQL> 
+SQL> INSERT INTO Cheap_View values(
+  2  '56-CV','Grape','Juice');
+
+1 row created.
+
+SQL> UPDATE Cheap_View SET FOOD='Chocolate'
+  2  WHERE PID='70-W';
+
+1 row updated.
+
+SQL> DELETE FROM Cheap_View
+  2  WHERE FLAVOR='Nuts';
+
+1 row deleted.
+
+SQL> 
+SQL> SELECT * FROM Cheap_Food;
+
+PID             FLAVOR     FOOD                      PRICE                      
+--------------- ---------- -------------------- ----------                      
+70-LEM          Lemon      Cookie                      .25                      
+70-W            Walnut     Chocolate                   .79                      
+
+SQL> 
+SQL> SELECT * FROM Cheap_View;
+
+PID             FLAVOR     FOOD                                                 
+--------------- ---------- --------------------                                 
+70-LEM          Lemon      Cookie                                               
+70-W            Walnut     Chocolate                                            
+
+SQL> 
+SQL> INSERT INTO Cheap_Food values ('82-CPF','Non-Veg','Nugget',0.62);
+
+1 row created.
+
+SQL> UPDATE Cheap_Food SET FOOD='IceCream'
+  2  WHERE PID='70-W';
+
+1 row updated.
+
+SQL> DELETE FROM Cheap_Food
+  2  WHERE FLAVOR='Lemon';
+DELETE FROM Cheap_Food
+*
+ERROR at line 1:
+ORA-02292: integrity constraint (SYSTEM.ITEM_FK) violated - child record found 
+
+
+SQL> 
+SQL> SELECT * FROM Cheap_View;
+
+PID             FLAVOR     FOOD                                                 
+--------------- ---------- --------------------                                 
+70-LEM          Lemon      Cookie                                               
+70-W            Walnut     IceCream                                             
+82-CPF          Non-Veg    Nugget                                               
+
+SQL> 
+SQL> REM 6.Create a sequence named Ordinal_No_Seq which generates the ordinal number
+SQL> REM starting from 1, increment by 1, to a maximum of 10. Include the options of cycle,
+SQL> REM cache and order. Use this sequence to populate the item_list table for a new order.
+SQL> 
+SQL> CREATE SEQUENCE Ordinal_No_Seq
+  2  MAXVALUE 10
+  3  START WITH 1
+  4  INCREMENT BY 1
+  5  CACHE 5
+  6  CYCLE
+  7  ORDER;
+
+Sequence created.
+
+SQL> 
+SQL> INSERT INTO RECEIPTS values(491204,'20-Jan-2019',12);
+
+1 row created.
+
+SQL> INSERT INTO ITEM_LIST values(491204,Ordinal_No_Seq.nextval,'90-CH-PF');
+
+1 row created.
+
+SQL> INSERT INTO ITEM_LIST values(491204,Ordinal_No_Seq.nextval,'70-GA');
+
+1 row created.
+
+SQL> INSERT INTO ITEM_LIST values(491204,Ordinal_No_Seq.nextval,'51-APP');
+
+1 row created.
+
+SQL> 
+SQL> SELECT * FROM ITEM_LIST WHERE RNO=491204;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+    491204          1 90-CH-PF                                                  
+    491204          2 70-GA                                                     
+    491204          3 51-APP                                                    
+
+SQL> 
+SQL> REM 7:Create a synonym named Product_details for the item_list relation. Perform the DML operations on it.
+SQL> 
+SQL> CREATE SYNONYM Product_details for ITEM_LIST;
+
+Synonym created.
+
+SQL> 
+SQL> INSERT INTO RECEIPTS values(181923,'10-Jul-2009',10);
+
+1 row created.
+
+SQL> INSERT INTO Product_details
+  2  values(181923,8,'24-8x10');
+
+1 row created.
+
+SQL> SELECT * FROM Product_details WHERE RNO=181923;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+    181923          8 24-8x10                                                   
+
+SQL> SELECT * FROM ITEM_LIST WHERE RNO=181923;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+    181923          8 24-8x10                                                   
+
+SQL> 
+SQL> UPDATE Product_details
+  2  SET ITEM='90-APR-PF'
+  3  where RNO=181923 and ordinal='8';
+
+1 row updated.
+
+SQL> SELECT * FROM Product_details WHERE RNO=181923;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+    181923          8 90-APR-PF                                                 
+
+SQL> SELECT * FROM ITEM_LIST WHERE RNO=181923;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+    181923          8 90-APR-PF                                                 
+
+SQL> 
+SQL> DELETE FROM Product_details
+  2  where RNO=181923;
+
+1 row deleted.
+
+SQL> SELECT * FROM Product_details WHERE RNO=181923;
+
+no rows selected
+
+SQL> SELECT * FROM ITEM_LIST WHERE RNO=181923;
+
+no rows selected
+
+SQL> 
+SQL> REM 8:Drop all the above created database objects.
+SQL> 
+SQL> DROP VIEW Blue_flavor;
+
+View dropped.
+
+SQL> DROP VIEW Cheap_Food;
+
+View dropped.
+
+SQL> DROP VIEW Hot_Food ;
+
+View dropped.
+
+SQL> DROP VIEW Pie_Food;
+
+View dropped.
+
+SQL> DROP VIEW Cheap_View;
+
+View dropped.
+
+SQL> DROP SEQUENCE Ordinal_No_Seq;
+
+Sequence dropped.
+
+SQL> DROP SYNONYM Product_details;
+
+Synonym dropped.
+
+SQL> spool off

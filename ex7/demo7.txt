@@ -1,0 +1,203 @@
+SQL> @C:\Users\vaish\Desktop\dbms_lab_home\ex7\lab7.sql
+SQL> REM 1. The combination of Flavor and Food determines the product id. Hence, while
+SQL> REM inserting a new instance into the Products relation, ensure that the same combination
+SQL> REM of Flavor and Food is not already available.
+SQL> 
+SQL> alter table RECEIPTS
+  2  drop column amount;
+
+Table altered.
+
+SQL> 
+SQL> CREATE or REPLACE TRIGGER combination
+  2  BEFORE INSERT on PRODUCTS for each row
+  3  
+  4  declare
+  5  t_food products.food%type;
+  6  t_flavor products.flavor%type;
+  7  cursor c1 is select food,flavor from products;
+  8  
+  9  begin
+ 10  open c1;
+ 11  fetch c1 into t_food,t_flavor;
+ 12  while c1%found loop
+ 13     if t_food = :new.food and t_flavor = :new.flavor then
+ 14  raise_application_error(-20000,'error:combination present');
+ 15  exit;
+ 16     end if;
+ 17  fetch c1 into t_food,t_flavor;
+ 18  end loop;
+ 19  end;
+ 20  /
+
+Trigger created.
+
+SQL> insert into products values('55-ALM','Almond','Croissant',1.45);
+insert into products values('55-ALM','Almond','Croissant',1.45)
+            *
+ERROR at line 1:
+ORA-20000: error:combination present 
+ORA-06512: at "SYSTEM.COMBINATION", line 11 
+ORA-04088: error during execution of trigger 'SYSTEM.COMBINATION' 
+
+
+SQL> REM 2. While entering an item into the item_list relation, update the amount
+SQL> REM in Receipts with the total amount for that receipt number.
+SQL> 
+SQL> alter table RECEIPTS
+  2  add amount float default 0;
+
+Table altered.
+
+SQL> 
+SQL> update receipts r
+  2  set amount=(select sum(price)  from item_list i join products
+  3       on item=pid where r.rno=i.rno );
+
+200 rows updated.
+
+SQL> 
+SQL> create or replace trigger update_amnt
+  2  after insert on item_list for each row
+  3  
+  4  declare
+  5  tprice products.price%type;
+  6  
+  7  begin
+  8  select price into tprice
+  9  from products where pid=:new.item;
+ 10  
+ 11  update receipts
+ 12  set amount=amount+tprice
+ 13  where rno=:new.rno;
+ 14  end;
+ 15  /
+
+Trigger created.
+
+SQL> select * from receipts where rno=99002;
+
+       RNO RDATE            CID     AMOUNT                                      
+---------- --------- ---------- ----------                                      
+     99002 13-OCT-07         20          5                                      
+
+SQL> insert into item_list values(99002, 3,  '50-CH');
+
+1 row created.
+
+SQL> select * from receipts where rno=99002;
+
+       RNO RDATE            CID     AMOUNT                                      
+---------- --------- ---------- ----------                                      
+     99002 13-OCT-07         20       6.75                                      
+
+SQL> REM 3. Implement the following constraints for Item_list relation:
+SQL> REM a. A receipt can contain a maximum of five items only.
+SQL> REM b. A receipt should not allow an item to be purchased more than thrice.
+SQL> 
+SQL> create or replace trigger five_max
+  2  before insert or update on item_list for each row
+  3  begin
+  4  if :new.ordinal>5 then
+  5  raise_application_error(-20200,:new.rno||' has more than 5 items');
+  6  end if;
+  7  end;
+  8  /
+
+Trigger created.
+
+SQL> select * from item_list where rno=52761;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+     52761          1 90-ALM-I                                                  
+     52761          2 26-8x10                                                   
+     52761          3 50-CHS                                                    
+     52761          4 90-BLK-PF                                                 
+     52761          5 90-ALM-I                                                  
+
+SQL> insert into item_list values(52761,6,'70-TU');
+insert into item_list values(52761,6,'70-TU')
+            *
+ERROR at line 1:
+ORA-20200: 52761 has more than 5 items 
+ORA-06512: at "SYSTEM.FIVE_MAX", line 3 
+ORA-04088: error during execution of trigger 'SYSTEM.FIVE_MAX' 
+
+
+SQL> create or replace trigger pur_thrice
+  2  before insert or update on item_list for each row
+  3  
+  4  declare
+  5  cursor c1 is select rno,item,count(*)
+  6  from item_list
+  7  group by rno,item;
+  8  
+  9  rid item_list.rno%type;
+ 10  t_item item_list.item%type;
+ 11  cnt int;
+ 12  
+ 13  begin
+ 14  
+ 15  open c1;
+ 16  fetch c1 into rid,t_item,cnt;
+ 17  while c1%found loop
+ 18      if rid = :new.rno and t_item = :new.item and cnt>=3 then
+ 19  raise_application_error(-20100,t_item||' will be purchased more than thrice in '||rid);
+ 20  exit;
+ 21      end if;
+ 22  fetch c1 into rid,t_item,cnt;
+ 23  end loop;
+ 24  end;
+ 25  /
+
+Trigger created.
+
+SQL> select rno,item from item_list where rno=41028;
+
+       RNO ITEM                                                                 
+---------- ---------------                                                      
+     41028 90-BER-11                                                            
+
+
+SQL> select * from item_list where rno=41028;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+     41028          1 90-BER-11                                                 
+
+SQL> insert into item_list values(41028, 4,  '90-BER-11');
+
+1 row created.
+
+SQL> insert into item_list values(41028, 2,  '90-BER-11');
+
+1 row created.
+
+SQL> insert into item_list values(41028, 3,  '90-BER-11');
+insert into item_list values(41028, 3,  '90-BER-11')
+            *
+ERROR at line 1:
+ORA-20100: 90-BER-11 will be purchased more than thrice in 41028 
+ORA-06512: at "SYSTEM.PUR_THRICE", line 16 
+ORA-04088: error during execution of trigger 'SYSTEM.PUR_THRICE' 
+
+
+SQL> select * from item_list where rno=41028;
+
+       RNO    ORDINAL ITEM                                                      
+---------- ---------- ---------------                                           
+     41028          1 90-BER-11                                                 
+     41028          2 90-BER-11                                                 
+     41028          4 90-BER-11                                                 
+
+SQL> insert into item_list values(41028, 3,  '90-BER-11');
+insert into item_list values(41028, 3,  '90-BER-11')
+            *
+ERROR at line 1:
+ORA-20100: 90-BER-11 will be purchased more than thrice in 41028 
+ORA-06512: at "SYSTEM.PUR_THRICE", line 16 
+ORA-04088: error during execution of trigger 'SYSTEM.PUR_THRICE' 
+
+
+SQL> spool off

@@ -1,0 +1,254 @@
+SQL> set echo on
+SQL> drop table emp_payroll;
+
+Table dropped.
+
+SQL> 
+SQL> CREATE TABLE emp_payroll(
+  2  eid number(3) constraint eid_pk PRIMARY KEY,
+  3  ename varchar2(20) constraint ename_nn NOT NULL,
+  4  dob date,
+  5  sex varchar2(5),
+  6  designation varchar2(20) ,
+  7  basic float(6) ,
+  8  da float(6),
+  9  hra float(6),
+ 10  pf float(6),
+ 11  mc float(6),
+ 12  gross float(6),
+ 13  tot_deduc float(6),
+ 14  net_pay float(6)
+ 15  );
+
+Table created.
+
+SQL> desc emp_payroll
+ Name                                   Null?    Type
+ -------------------------------------- -------- ----------
+ EID                                    NOT NULL NUMBER(3)
+ ENAME                                  NOT NULL VARCHAR2(20)
+ DOB                                             DATE
+ SEX                                             VARCHAR2(5)
+ DESIGNATION                                     VARCHAR2(20)
+ BASIC                                           FLOAT(6)
+ DA                                              FLOAT(6)
+ HRA                                             FLOAT(6)
+ PF                                              FLOAT(6)
+ MC                                              FLOAT(6)
+ GROSS                                           FLOAT(6)
+ TOT_DEDUC                                       FLOAT(6)
+ NET_PAY                                         FLOAT(6)
+
+SQL> REM PL/SQL for calculating payroll
+SQL> set serveroutput on;
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE netpay_calc(
+  2  eid IN emp_payroll.eid%type,
+  3  basic IN emp_payroll.basic%type,
+  4  da OUT emp_payroll.da%type,
+  5  hra OUT emp_payroll.hra%type,
+  6  mc OUT emp_payroll.mc%type,
+  7  pf OUT emp_payroll.pf%type,
+  8  gross OUT emp_payroll.gross%type,
+  9  tot_deduc OUT emp_payroll.tot_deduc%type,
+ 10  net_pay OUT emp_payroll.net_pay%type)
+ 11  
+ 12  IS
+ 13  BEGIN
+ 14  da:=0.6*basic;
+ 15  hra:=0.11*basic;
+ 16  mc:=0.03*basic;
+ 17  pf:=0.04*basic;
+ 18  gross:=basic+da+hra;
+ 19  tot_deduc:=pf+mc;
+ 20  net_pay:=gross-tot_deduc;
+ 21  /
+
+Warning: Procedure created with compilation errors.
+
+SQL> show errors
+Errors for PROCEDURE NETPAY_CALC:
+
+LINE/COL ERROR                                                                  
+-------- -----------------------------------------------------------------      
+20/25    PLS-00103: Encountered the symbol "end-of-file" when expecting         
+         one of the following:                                                  
+         ( begin case declare end exception exit for goto if loop mod           
+         null pragma raise return select update while with                      
+         <an identifier> <a double-quoted delimited-identifier>                 
+         <a bind variable> << continue close current delete fetch lock          
+         insert open rollback savepoint set sql execute commit forall           
+         merge pipe purge                                                       
+                                                                                
+SQL> REM PL/SQL for calculating payroll
+SQL> set serveroutput on;
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE netpay_calc(
+  2  eid IN emp_payroll.eid%type,
+  3  basic IN emp_payroll.basic%type,
+  4  da OUT emp_payroll.da%type,
+  5  hra OUT emp_payroll.hra%type,
+  6  mc OUT emp_payroll.mc%type,
+  7  pf OUT emp_payroll.pf%type,
+  8  gross OUT emp_payroll.gross%type,
+  9  tot_deduc OUT emp_payroll.tot_deduc%type,
+ 10  net_pay OUT emp_payroll.net_pay%type)
+ 11  
+ 12  IS
+ 13  BEGIN
+ 14  da:=0.6*basic;
+ 15  hra:=0.11*basic;
+ 16  mc:=0.03*basic;
+ 17  pf:=0.04*basic;
+ 18  gross:=basic+da+hra;
+ 19  tot_deduc:=pf+mc;
+ 20  net_pay:=gross-tot_deduc;
+ 21  end;
+ 22  /
+
+Procedure created.
+
+SQL> select * from emp_payroll;
+
+no rows selected
+
+SQL> select * from emp_payroll;
+
+       EID ENAME                DOB       SEX   DESIGNATION               BASIC 
+---------- -------------------- --------- ----- -------------------- ---------- 
+        DA        HRA         PF         MC      GROSS  TOT_DEDUC    NET_PAY    
+---------- ---------- ---------- ---------- ---------- ---------- ----------    
+       101 VAISHALI             13-DEC-99 F     TEACHER                   60000 
+     36000       6600       2400       1800     100000       4200      96000    
+                                                                                
+       102 RAJA                 26-FEB-65 M     Sr.Manager                75000 
+     45000       8300       3000       2300     130000       5300     120000    
+                                                                                
+
+SQL> SELECT * FROM EMP_PAYROLL WHERE EID=101;
+
+       EID ENAME                DOB       SEX   DESIGNATION               BASIC 
+---------- -------------------- --------- ----- -------------------- ---------- 
+        DA        HRA         PF         MC      GROSS  TOT_DEDUC    NET_PAY    
+---------- ---------- ---------- ---------- ---------- ---------- ----------    
+       101 VAISHALI             13-DEC-99 F     TEACHER                   60000 
+     36000       6600       2400       1800     100000       4200      96000    
+                                                                                
+
+SQL> SELECT * FROM EMP_PAYROLL WHERE EID=101;
+
+       EID ENAME                DOB       SEX   DESIGNATION               BASIC 
+---------- -------------------- --------- ----- -------------------- ---------- 
+        DA        HRA         PF         MC      GROSS  TOT_DEDUC    NET_PAY    
+---------- ---------- ---------- ---------- ---------- ---------- ----------    
+       101 VAISHALI             13-DEC-99 F     PROFESSOR                 80000 
+     48000       8800       3200       2400     140000       5600     130000    
+                                                                                
+
+SQL> SELECT * FROM EMP_PAYROLL ;
+
+       EID ENAME                DOB       SEX   DESIGNATION               BASIC 
+---------- -------------------- --------- ----- -------------------- ---------- 
+        DA        HRA         PF         MC      GROSS  TOT_DEDUC    NET_PAY    
+---------- ---------- ---------- ---------- ---------- ---------- ----------    
+       101 VAISHALI             13-DEC-99 F     PROFESSOR                 80000 
+     48000       8800       3200       2400     140000       5600     130000    
+                                                                                
+       102 RAJA                 26-FEB-65 M     Sr.Manager                75000 
+     45000       8300       3000       2300     130000       5300     120000    
+                                                                                
+
+SQL> SELECT * FROM EMP_PAYROLL WHERE EID=102;
+
+no rows selected
+
+SQL> INSERT INTO EMP_PAYROLL (EID,ENAME,DOB,SEX,DESIGNATION,BASIC) VALUES(103,'SANTHI','25-Jul-1980','F','ASSISTANT',300000,);
+INSERT INTO EMP_PAYROLL (EID,ENAME,DOB,SEX,DESIGNATION,BASIC) VALUES(103,'SANTHI','25-Jul-1980','F','ASSISTANT',300000,)
+                                                                                                                       *
+ERROR at line 1:
+ORA-00936: missing expression 
+
+
+SQL> INSERT INTO EMP_PAYROLL (EID,ENAME,DOB,SEX,DESIGNATION,BASIC) VALUES(103,'SANTHI','25-Jul-1980','F','ASSISTANT',300000);
+
+1 row created.
+
+SQL> SELECT * FROM EMP_PAYROLL;
+
+       EID ENAME                DOB       SEX   DESIGNATION               BASIC 
+---------- -------------------- --------- ----- -------------------- ---------- 
+        DA        HRA         PF         MC      GROSS  TOT_DEDUC    NET_PAY    
+---------- ---------- ---------- ---------- ---------- ---------- ----------    
+       101 VAISHALI             13-DEC-99 F     PROFESSOR                 80000 
+     48000       8800       3200       2400     140000       5600     130000    
+                                                                                
+       103 SANTHI               25-JUL-80 F     ASSISTANT                300000 
+                                                                                
+                                                                                
+
+SQL> INSERT INTO EMP_PAYROLL VALUES(103,'SANTHI','25-Jul-1980','F','ASSISTANT',300000,18000,3300,1200,900,51300,2100,49200);
+INSERT INTO EMP_PAYROLL VALUES(103,'SANTHI','25-Jul-1980','F','ASSISTANT',300000,18000,3300,1200,900,51300,2100,49200)
+*
+ERROR at line 1:
+ORA-00001: unique constraint (SYSTEM.EID_PK) violated 
+
+
+SQL> INSERT INTO EMP_PAYROLL VALUES(104,'REKHA','25-Jul-1970','F','DIRECTOR',300000,18000,3300,1200,900,51300,2100,49200);
+
+1 row created.
+
+SQL> SELECT * FROM EMP_PAYROLL;
+
+       EID ENAME                DOB       SEX   DESIGNATION               BASIC 
+---------- -------------------- --------- ----- -------------------- ---------- 
+        DA        HRA         PF         MC      GROSS  TOT_DEDUC    NET_PAY    
+---------- ---------- ---------- ---------- ---------- ---------- ----------    
+       101 VAISHALI             13-DEC-99 F     PROFESSOR                 80000 
+     48000       8800       3200       2400     140000       5600     130000    
+                                                                                
+       104 REKHA                25-JUL-70 F     DIRECTOR                 300000 
+     18000       3300       1200        900      51000       2100      49000    
+                                                                                
+       103 SANTHI               25-JUL-80 F     ASSISTANT                300000 
+                                                                                
+                                                                                
+
+SQL> UPDATE EMP_PAYROLL SET DOB='30-Sep-1999' WHERE EID=101;
+
+1 row updated.
+
+SQL> SELECT * FROM EMP_PAYROLL;
+
+       EID ENAME                DOB       SEX   DESIGNATION               BASIC 
+---------- -------------------- --------- ----- -------------------- ---------- 
+        DA        HRA         PF         MC      GROSS  TOT_DEDUC    NET_PAY    
+---------- ---------- ---------- ---------- ---------- ---------- ----------    
+       101 VAISHALI             30-SEP-99 F     PROFESSOR                 80000 
+     48000       8800       3200       2400     140000       5600     130000    
+                                                                                
+       104 REKHA                25-JUL-70 F     DIRECTOR                 300000 
+     18000       3300       1200        900      51000       2100      49000    
+                                                                                
+       103 SANTHI               25-JUL-80 F     ASSISTANT                300000 
+                                                                                
+                                                                                
+SQL> select * from emp_payroll;
+
+       EID ENAME                DOB       SEX   DESIGNATION               BASIC
+---------- -------------------- --------- ----- -------------------- ----------
+        DA        HRA         PF         MC      GROSS  TOT_DEDUC    NET_PAY
+---------- ---------- ---------- ---------- ---------- ---------- ----------
+       101 VAISHALI             30-SEP-99 F     PROFESSOR                 80000
+     48000       8800       3200       2400     140000       5600     130000
+
+       104 REKHA                25-JUL-70 F     DIRECTOR                 300000
+     18000       3300       1200        900      51000       2100      49000
+
+       103 SANTHI               25-JUL-80 F     ASSISTANT                300000
+
+
+
+SQL> delete from emp_payroll where eid=104;
+
+1 row deleted.
+SQL> SPOOL OFF;
